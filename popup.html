@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MindTrace</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 15px;
+      width: 250px;
+    }
+    button, select {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+      font-weight: bold;
+    }
+    textarea {
+      width: 100%;
+      height: 60px;
+      margin-top: 8px;
+      resize: none;
+    }
+    h2, h3 {
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h2>MindTrace 🔍</h2>
+
+  <label for="model">Choose Model:</label>
+  <select id="model">
+    <option value="nb">Naive Bayes</option>
+    <option value="lr">BERT</option>
+  </select>
+
+  <h3>Feedback 📝</h3>
+  <textarea id="feedbackText" placeholder="Paste risky message..."></textarea>
+  
+  <select id="feedbackLabel">
+    <option value="honeytrap">Honeytrap</option>
+    <option value="jobfraud">Job Fraud</option>
+    <option value="scam">Scam</option>
+    <option value="ham">Safe</option>
+  </select>
+
+  <button id="submitFeedback">Submit Feedback</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>

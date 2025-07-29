@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Chat</title></head>
+<body>
+  <h2>🧪 MindTrace Test Page</h2>
+  <textarea id="chatbox" rows="5" cols="50" placeholder="Paste a message..."></textarea>
+
+  <script>
+    document.getElementById('chatbox').addEventListener('paste', (e) => {
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      console.log("📋 Manual Test Pasted:", text);
+    });
+  </script>
+</body>
+</html>
