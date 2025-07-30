@@ -1,0 +1,38 @@
+[
+  {
+    "message": "jhujhj",
+    "label": "honeytrap",
+    "model": "lr",
+    "timestamp": "2025-07-30T13:59:05.769814"
+  },
+  {
+    "message": "not bad",
+    "label": "jobfraud",
+    "model": "lr",
+    "timestamp": "2025-07-30T14:00:02.027365"
+  },
+  {
+    "message": "not bad",
+    "label": "honeytrap",
+    "model": "lr",
+    "timestamp": "2025-07-30T14:01:30.905242"
+  },
+  {
+    "message": "hi..",
+    "label": "jobfraud",
+    "model": "lr",
+    "timestamp": "2025-07-30T14:21:34.567894"
+  },
+  {
+    "message": "hlo..",
+    "label": "honeytrap",
+    "model": "lr",
+    "timestamp": "2025-07-30T14:32:30.243486"
+  },
+  {
+    "message": "u are my dream",
+    "label": "honeytrap",
+    "model": "lr",
+    "timestamp": "2025-07-30T14:35:28.648289"
+  }
+]

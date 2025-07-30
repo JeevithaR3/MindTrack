@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MindTrace Demo Chat</title>
+  <style>
+    body {
+      background: #111b21;
+      color: #e9edef;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #25d366;
+    }
+
+    .toggle {
+      margin: 10px 0;
+    }
+
+    .contact {
+      background: #202c33;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px 0;
+      max-width: 600px;
+    }
+
+    .messages {
+      background: #111b21;
+      padding: 10px;
+      border-radius: 8px;
+      height: 200px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .messages p {
+      padding: 8px 12px;
+      border-radius: 15px;
+      margin: 5px 0;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+
+    .sent {
+      align-self: flex-end;
+      background: #005c4b;
+    }
+
+    .received {
+      background: #2a3942;
+      align-self: flex-start;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      background: #2a3942;
+      color: white;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      background: #25d366;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h2>💬 MindTrace Demo Chat</h2>
+  <label class="toggle"><input type="checkbox" id="redToggle" checked> Enable Red Teaming</label>
+  <div id="chats"></div>
+
+  <script>
+    const contacts = {
+      "Alice": { scamCount: 0, totalCount: 0, blocked: false, verified: false },
+      "+919999888877": { scamCount: 0, totalCount: 0, blocked: false, verified: false }
+    };
+
+    const createMsg = (text, type) => {
+      const p = document.createElement("p");
+      p.className = type;
+      p.textContent = text;
+      return p;
+    };
+
+    const simulateBotReply = (div, text) => {
+      setTimeout(() => {
+        div.querySelector(".messages").appendChild(createMsg("🤖 MindTrace: " + text, "sent"));
+      }, 1000);
+    };
+
+    const handleReceive = async (contact, div, input) => {
+      const text = input.value.trim();
+      if (!text || contacts[contact].blocked || contacts[contact].verified) return;
+
+      const msgArea = div.querySelector(".messages");
+      msgArea.appendChild(createMsg("👤 " + contact + ": " + text, "received"));
+      input.value = "";
+
+      contacts[contact].totalCount++;
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, model: "nb" })
+        });
+
+        const result = await res.json();
+        if (result.block) {
+          contacts[contact].scamCount++;
+          if (document.getElementById("redToggle").checked) {
+            const sim = await fetch("http://127.0.0.1:8000/simulate_response", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ message: text, model: "nb" })
+            });
+            const simData = await sim.json();
+            simulateBotReply(div, simData.bait_reply);
+          }
+        }
+
+        if (contacts[contact].totalCount >= 5) {
+          if (contacts[contact].scamCount > 3) {
+            contacts[contact].blocked = true;
+            alert(`🚫 ${contact} is blocked due to suspicious behavior.`);
+            input.disabled = true;
+            div.querySelector(".send-btn").disabled = true;
+            div.querySelector(".receive-btn").disabled = true;
+          } else {
+            contacts[contact].verified = true;
+            alert(`✅ ${contact} passed verification. You may continue chatting.`);
+          }
+        }
+
+      } catch (err) {
+        console.error("Prediction failed", err);
+      }
+    };
+
+    const handleSend = (contact, div, input) => {
+      const text = input.value.trim();
+      if (!text || contacts[contact].blocked) return;
+      div.querySelector(".messages").appendChild(createMsg("🧑‍💻 You: " + text, "sent"));
+      input.value = "";
+    };
+
+    const renderChats = () => {
+      const container = document.getElementById("chats");
+      for (const name in contacts) {
+        const contactDiv = document.createElement("div");
+        contactDiv.className = "contact";
+
+        const title = document.createElement("h3");
+        title.textContent = `${name} (${contacts[name].blocked ? "❌ Blocked" : "Pending"})`;
+        contactDiv.appendChild(title);
+
+        const msgArea = document.createElement("div");
+        msgArea.className = "messages";
+        contactDiv.appendChild(msgArea);
+
+        const input = document.createElement("input");
+        input.className = "chat-input";
+        input.placeholder = "Type a message...";
+
+        const sendBtn = document.createElement("button");
+        sendBtn.className = "btn send-btn";
+        sendBtn.textContent = "Send";
+        sendBtn.onclick = () => handleSend(name, contactDiv, input);
+
+        const recvBtn = document.createElement("button");
+        recvBtn.className = "btn receive-btn";
+        recvBtn.textContent = "Receive";
+        recvBtn.onclick = () => handleReceive(name, contactDiv, input);
+
+        const inputGroup = document.createElement("div");
+        inputGroup.className = "input-group";
+        inputGroup.appendChild(input);
+        inputGroup.appendChild(sendBtn);
+        inputGroup.appendChild(recvBtn);
+
+        contactDiv.appendChild(inputGroup);
+        container.appendChild(contactDiv);
+      }
+    };
+
+    renderChats();
+  </script>
+</body>
+</html>

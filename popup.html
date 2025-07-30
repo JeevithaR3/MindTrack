@@ -4,29 +4,73 @@
   <title>MindTrace</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       padding: 15px;
-      width: 250px;
+      width: 260px;
+      background: linear-gradient(to bottom, #0a0f0d, #1c1f1f);
+      color: #ffffff;
     }
-    button, select {
-      margin-top: 10px;
-      width: 100%;
-      padding: 8px;
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      color: #25d366;
+      text-align: center;
+    }
+
+    h3 {
+      margin-top: 18px;
+      font-size: 16px;
+      color: #ddd;
+    }
+
+    label {
       font-weight: bold;
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
     }
-    textarea {
+
+    select, textarea, button {
       width: 100%;
-      height: 60px;
-      margin-top: 8px;
-      resize: none;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      margin-top: 6px;
+      transition: 0.3s ease;
     }
-    h2, h3 {
-      margin-bottom: 6px;
+
+    select, textarea {
+      background-color: #2a2f32;
+      color: #ffffff;
+    }
+
+    select:focus, textarea:focus {
+      outline: 2px solid #25d366;
+      background-color: #3b4345;
+    }
+
+    button {
+      background: #25d366;
+      color: #111b21;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    button:hover {
+      background-color: #1eb95b;
+    }
+
+    textarea::placeholder {
+      color: #aaa;
     }
   </style>
 </head>
 <body>
-  <h2>MindTrace 🔍</h2>
+  <h2>MindTrace</h2>
 
   <label for="model">Choose Model:</label>
   <select id="model">
@@ -34,7 +78,7 @@
     <option value="lr">BERT</option>
   </select>
 
-  <h3>Feedback 📝</h3>
+  <h3>Feedback</h3>
   <textarea id="feedbackText" placeholder="Paste risky message..."></textarea>
   
   <select id="feedbackLabel">
