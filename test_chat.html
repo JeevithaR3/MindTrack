@@ -1,14 +1,229 @@
 <!DOCTYPE html>
 <html>
-<head><title>Test Chat</title></head>
+<head>
+  <title>MindTrace Test Chat</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #121b22;
+      color: #e9edef;
+      margin: 0;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      margin-bottom: 25px;
+      color: #00a884;
+    }
+
+    .search-bar {
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #2a3942;
+      color: #e9edef;
+      font-size: 15px;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #00a884;
+    }
+
+    .contact {
+      background: #1f2c33;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .contact h3 {
+      margin-bottom: 12px;
+      font-size: 18px;
+      color: #e9edef;
+    }
+
+    .chat-input {
+      background: #2a3942;
+      color: #e9edef;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 50px;
+      font-size: 15px;
+    }
+
+    .chat-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #00a884;
+      background: #202c33;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      background: #00a884;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #00906f;
+    }
+
+    .messages {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #2e3d45;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .messages p {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      line-height: 1.4;
+      word-wrap: break-word;
+      position: relative;
+    }
+
+    .messages p.sent {
+      align-self: flex-end;
+      background: #005c4b;
+      border-bottom-right-radius: 4px;
+    }
+
+    .messages p.received {
+      align-self: flex-start;
+      background: #202c33;
+      border-bottom-left-radius: 4px;
+    }
+
+    .timestamp {
+      display: block;
+      font-size: 11px;
+      color: #aebac1;
+      margin-top: 4px;
+      text-align: right;
+    }
+  </style>
+</head>
 <body>
-  <h2>🧪 MindTrace Test Page</h2>
-  <textarea id="chatbox" rows="5" cols="50" placeholder="Paste a message..."></textarea>
+  <h2>💬 MindTrace Chat</h2>
+
+  <div class="search-bar">
+    <input type="text" id="contactSearch" placeholder="🔍 Search contacts...">
+  </div>
+
+  <div class="contact" data-contact="Alice">
+    <h3>Alice</h3>
+    <div class="chat-input" contenteditable="true"></div>
+    <div class="buttons">
+      <button class="send-btn">Send</button>
+      <button class="receive-btn">Receive</button>
+    </div>
+    <div class="messages"></div>
+  </div>
+
+  <div class="contact" data-contact="Bob">
+    <h3>Bob</h3>
+    <div class="chat-input" contenteditable="true"></div>
+    <div class="buttons">
+      <button class="send-btn">Send</button>
+      <button class="receive-btn">Receive</button>
+    </div>
+    <div class="messages"></div>
+  </div>
+
+  <div class="contact" data-contact="+911234567890">
+    <h3>+911234567890</h3>
+    <div class="chat-input" contenteditable="true"></div>
+    <div class="buttons">
+      <button class="send-btn">Send</button>
+      <button class="receive-btn">Receive</button>
+    </div>
+    <div class="messages"></div>
+  </div>
 
   <script>
-    document.getElementById('chatbox').addEventListener('paste', (e) => {
-      const text = (e.clipboardData || window.clipboardData).getData('text');
-      console.log("📋 Manual Test Pasted:", text);
+    function triggerRiskAnalysis(text, input) {
+      const event = new ClipboardEvent("paste", {
+        clipboardData: new DataTransfer()
+      });
+      event.clipboardData.setData("text/plain", text);
+      input.dispatchEvent(event);
+    }
+
+    document.querySelectorAll(".contact").forEach(contact => {
+      const input = contact.querySelector(".chat-input");
+      const messages = contact.querySelector(".messages");
+      const contactName = contact.getAttribute("data-contact");
+
+      contact.querySelector(".send-btn").addEventListener("click", () => {
+        const text = input.innerText.trim();
+        if (text) {
+          const msg = document.createElement("p");
+          msg.className = "sent";
+          msg.textContent = `🧑‍💻 You: ${text}`;
+          const timestamp = document.createElement("span");
+          timestamp.className = "timestamp";
+          timestamp.textContent = new Date().toLocaleTimeString();
+          msg.appendChild(timestamp);
+          messages.appendChild(msg);
+          input.innerText = "";
+        }
+      });
+
+      contact.querySelector(".receive-btn").addEventListener("click", () => {
+        const text = input.innerText.trim();
+        if (text) {
+          const msg = document.createElement("p");
+          msg.className = "received";
+          msg.textContent = `👤 ${contactName}: ${text}`;
+          const timestamp = document.createElement("span");
+          timestamp.className = "timestamp";
+          timestamp.textContent = new Date().toLocaleTimeString();
+          msg.appendChild(timestamp);
+          messages.appendChild(msg);
+          triggerRiskAnalysis(text, input);
+          input.innerText = "";
+        }
+      });
+    });
+
+    document.getElementById("contactSearch").addEventListener("input", function() {
+      const search = this.value.toLowerCase();
+      document.querySelectorAll(".contact").forEach(contact => {
+        const name = contact.getAttribute("data-contact").toLowerCase();
+        contact.style.display = name.includes(search) ? "block" : "none";
+      });
     });
   </script>
 </body>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiShield - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <span class="logo-text"><span class="logo-icon">🛡️</span>DIGI SHIELD</span>
+        <div class="nav-links">
+  <a href="dashboard.html" class="active">Dashboard</a>
+  <a href="alerts.html">Alerts</a>
+  <a href="flagged.html">Flagged</a>
+  <!-- <a href="settings.html">Settings</a> -->
+  
+  <!-- 👤 User Info Hover Dropdown -->
+  <div class="user-dropdown">
+    <i class="fa-solid fa-user-circle"></i>
+    <span id="user-name-short">User</span>
+    <div class="user-hover-info" id="user-hover-info">
+      <p id="full-username">Name: </p>
+      <p id="user-email">Email: </p>
+      <p id="user-phone">Phone: </p>
+    </div>
+  </div>
+</div>
+
+    </nav>
+    <aside class="dashboard-sidebar">
+        <!-- <a href="overview.html">
+            <div class="sidebar-icon-container">
+                <i class="fa-solid fa-house sidebar-icon"></i>
+            </div>
+            Overview
+        </a> -->
+        <!-- <a href="scan_img.html">
+            <div class="sidebar-icon-container">
+                <i class="fa-solid fa-cloud-arrow-up sidebar-icon"></i>
+            </div>
+            Upload Scan
+        </a> -->
+        <a href="alert_history.html">
+            <div class="sidebar-icon-container">
+                <i class="fa-solid fa-clock-rotate-left sidebar-icon"></i>
+            </div>
+            Alert History
+        </a>
+        <!-- <a href="support.html">
+            <div class="sidebar-icon-container">
+                <i class="fa-solid fa-comments sidebar-icon"></i>
+            </div>
+            Support
+        </a> -->
+    </aside>
+    <main class="main-content">
+        
+
+        <div class="dashboard-welcome">
+            <h2>Welcome to the DigiShield Dashboard</h2>
+            <p>Protecting Children Online, One Message at a Time</p>
+        </div>
+            <section class="dashboard-summary">
+                <h3>Quick Summary</h3>
+                <ul>
+                    <li>2 flagged messages today!</li>  
+                    <li>0 manual scan uploads pending</li>
+                    <li>1 new alert in the past hour</li>
+                </ul>
+            </section>
+    </main>
+    <footer>
+        <p>DigiShield &copy; 2025. Protecting Children Online</p>
+    </footer>
+    <script>
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('email');
+
+  if (email) {
+    fetch(`http://localhost:5500/user/${email}`)
+      .then(res => res.json())
+      .then(user => {
+        // Top right display
+        document.getElementById('user-name-short').textContent = user.username;
+
+        // Hover details
+        document.getElementById('full-username').textContent = `Name: ${user.username}`;
+        document.getElementById('user-email').textContent = `Email: ${user.email}`;
+        document.getElementById('user-phone').textContent = `Phone: ${user.phone}`;
+      })
+      .catch(() => {
+        document.getElementById('user-name-short').textContent = "User";
+      });
+  } else {
+    document.getElementById('user-name-short').textContent = "User";
+  }
+</script>
+
+
+</body>
+</html>
