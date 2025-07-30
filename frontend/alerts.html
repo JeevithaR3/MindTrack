@@ -1,109 +1,119 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindTrack - Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="alert.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindTrack - Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="alert.css">
 </head>
 <body>
-    <nav class="navbar">
-        <span class="logo-text"><span class="logo-icon">🛡️</span>MINDTRACK</span>
-        <div class="nav-links">
-            <a href="dashboard.html" >Dashboard</a>
-            <a href="alerts.html" class="active">Alerts</a>
-            <a href="flagged.html">Flagged</a>
-            <a href="settings.html">Settings</a>
-        </div>
-    </nav>
-    <aside class="dashboard-sidebar">
-        <!-- <a href="overview.html" >
-            <div class="sidebar-icon-container">
-                <i class="fa-solid fa-house sidebar-icon"></i>
-            </div>
-            Overview
-        </a>
-        <a href="scan_img.html">
-            <div class="sidebar-icon-container">
-                <i class="fa-solid fa-cloud-arrow-up sidebar-icon"></i>
-            </div>
-            Upload Scan
-        </a> -->
-        <a href="alert_history.html">
-            <div class="sidebar-icon-container">
-                <i class="fa-solid fa-clock-rotate-left sidebar-icon"></i>
-            </div>
-            Alert History
-        </a>
-        <!-- <a href="support.html">
-            <div class="sidebar-icon-container">
-                <i class="fa-solid fa-comments sidebar-icon"></i>
-            </div>
-            Support
-        </a> -->
-    </aside>
-    <div class="main-wrapper">
-        <main class="main-content">
-            <h2>Alerts</h2>
-<section class="alerts-list" id="alertsContainer">
-            <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const container = document.getElementById("alertsContainer");
-
-    fetch("http://127.0.0.1:8000/api/messages")
-        .then(response => {
-            if (!response.ok) throw new Error("Network response failed");
-            return response.json();
-        })
-        .then(data => {
-            if (!Array.isArray(data) || data.length === 0) {
-                container.innerHTML = "<p>No alerts found yet.</p>";
-                return;
-            }
-
-            data.forEach(alert => {
-                const riskLevel = alert.risk_score >= 80 ? 'error' :
-                                  alert.risk_score >= 50 ? 'warning' : 'info';
-
-                const date = new Date(alert.timestamp);
-                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const dateStr = date.toLocaleDateString();
-
-                const alertCard = document.createElement("div");
-                alertCard.className = "alert-card";
-
-                alertCard.innerHTML = `
-                    <div class="alert-header">
-                        <span class="alert-badge ${riskLevel}">
-                            ${riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)}
-                        </span>
-                        <button class="alert-action">View details</button>
-                    </div>
-                    <div class="alert-details">
-                        <strong>Type:</strong> ${alert.bert_label}<br>
-                        <strong>Message:</strong> "${alert.text}"<br>
-                        <strong>Time:</strong> ${timeStr}, ${dateStr}<br>
-                        <strong>Website:</strong> <code>${alert.url}</code><br>
-                        <strong>Description:</strong> This content was flagged by AI Defender with a risk score of ${alert.risk_score}%.
-                    </div>
-                `;
-
-                container.appendChild(alertCard);
-            });
-        })
-        .catch(error => {
-            console.error("Error loading alerts:", error);
-            container.innerHTML = `<p style="color: red;">Failed to load alerts. Please try again later.</p>`;
-        });
-});
-</script>
-</section>
-
-
-        </main>
+  <nav class="navbar">
+    <span class="logo-text"><span class="logo-icon">🛡️</span>MindTrack</span>
+    <div class="nav-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="alerts.html" class="active">Alerts</a>
+      <a href="flagged.html">Flagged</a>
+      <a href="settings.html">Settings</a>
     </div>
-    
+  </nav>
+
+  <aside class="dashboard-sidebar">
+    <a href="alert_history.html">
+      <div class="sidebar-icon-container">
+        <i class="fa-solid fa-clock-rotate-left sidebar-icon"></i>
+      </div>
+      Alert History
+    </a>
+  </aside>
+
+  <div class="main-wrapper">
+    <main class="main-content">
+      <h2>Alerts</h2>
+      <section class="alerts-list" id="alertsContainer">
+        <p>Loading alerts...</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("alertsContainer");
+    container.innerHTML = ""; // clear loading text
+
+    const renderAlertCard = (alert, isFeedback = false) => {
+      const riskLevel = isFeedback
+        ? (alert.label === "ham" ? "info" : "warning")
+        : alert.risk_score >= 80 ? "error"
+        : alert.risk_score >= 50 ? "warning"
+        : "info";
+
+      const date = new Date(alert.timestamp);
+      const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateStr = date.toLocaleDateString();
+
+      const alertCard = document.createElement("div");
+      alertCard.className = "alert-card";
+
+      const type = isFeedback ? alert.label : alert.bert_label;
+      const message = isFeedback ? alert.message : alert.text;
+      const model = alert.model === "lr"
+  ? "BERT"
+  : alert.model === "nb"
+  ? "Naive Bayes"
+  : "Unknown";
+
+      const riskInfo = isFeedback
+        ? `Manual feedback using ${model} model.`
+        : `Flagged by AI Defender with a risk score of ${alert.risk_score}%.`;
+
+      const url = isFeedback ? "N/A" : alert.url || "N/A";
+
+      alertCard.innerHTML = `
+        <div class="alert-header">
+          <span class="alert-badge ${riskLevel}">
+            ${riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)}
+          </span>
+          <button class="alert-action">View details</button>
+        </div>
+        <div class="alert-details">
+          <strong>Type:</strong> ${type}<br>
+          <strong>Message:</strong> "${message}"<br>
+          <strong>Time:</strong> ${timeStr}, ${dateStr}<br>
+          <strong>Model:</strong> ${model}<br>
+          <strong>Website:</strong> <code>${url}</code><br>
+          <strong>Description:</strong> ${riskInfo}
+        </div>
+      `;
+
+      container.appendChild(alertCard);
+    };
+
+    const loadAlerts = async () => {
+      try {
+        const [liveAlerts, feedbackAlerts] = await Promise.all([
+          fetch("http://127.0.0.1:8000/api/messages").then(res => res.json()),
+          fetch("http://127.0.0.1:8000/get_alerts").then(res => res.json())
+        ]);
+
+        if ((!liveAlerts || liveAlerts.length === 0) && (!feedbackAlerts || feedbackAlerts.length === 0)) {
+          container.innerHTML = "<p>No alerts found yet.</p>";
+          return;
+        }
+
+        // Show live alerts
+        liveAlerts.forEach(alert => renderAlertCard(alert, false));
+
+        // Show feedback alerts
+        feedbackAlerts.forEach(feedback => renderAlertCard(feedback, true));
+      } catch (error) {
+        console.error("Failed to load alerts:", error);
+        container.innerHTML = `<p style="color:red;">Failed to load alerts. Please try again later.</p>`;
+      }
+    };
+
+    loadAlerts();
+  });
+  </script>
 </body>
 </html>

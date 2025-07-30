@@ -1,24 +1,60 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify  # ✅ Needed import
+from flask_cors import CORS
 import joblib
 import re
-import pandas as pd
 import os
-from flask_cors import CORS
+import pandas as pd
+import json
+from datetime import datetime  # ✅ For timestamping live alerts
 
 app = Flask(__name__)
-CORS(app)  # 🔥 Enables CORS for all routes (HTML/extension safe)
+CORS(app)  # 🔥 Enables CORS for all routes
 
-# Load models and vectorizer
+FEEDBACK_FILE = 'alerts.json'
+LIVE_ALERTS = []  # ✅ Stores predictions for /api/messages
+
+# -------------------------- Feedback Storage --------------------------
+
+@app.route("/submit_feedback", methods=["POST"])
+def submit_feedback():
+    data = request.get_json()
+
+    if not os.path.exists(FEEDBACK_FILE):
+        with open(FEEDBACK_FILE, "w") as f:
+            json.dump([], f)
+
+    with open(FEEDBACK_FILE, "r") as f:
+        existing = json.load(f)
+
+    data["timestamp"] = datetime.now().isoformat()  # ✅ Add timestamp if not already present
+    existing.append(data)
+
+    with open(FEEDBACK_FILE, "w") as f:
+        json.dump(existing, f, indent=2)
+
+    return jsonify({"status": "success"})
+
+@app.route("/get_alerts", methods=["GET"])
+def get_alerts():
+    if not os.path.exists(FEEDBACK_FILE):
+        return jsonify([])
+    with open(FEEDBACK_FILE, "r") as f:
+        alerts = json.load(f)
+    return jsonify(alerts)
+
+# -------------------------- Load Models --------------------------
+
 nb_model = joblib.load("honeytrap_detector_model.pkl")
 lr_model = joblib.load("logistic_detector_model.pkl")
 vectorizer = joblib.load("vectorizer.pkl")
 
-# Risk classification labels and threshold
 RISK_LABELS = ["honeytrap", "jobfraud", "scam"]
-BLOCK_THRESHOLD = 0.65  # tweak as needed
+BLOCK_THRESHOLD = 0.65
 
 def clean(text):
     return re.sub(r'[^\w\s]', '', text).lower()
+
+# -------------------------- Predict Route --------------------------
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -40,11 +76,29 @@ def predict():
 
     print(f"🔎 {model_choice.upper()} | {message} → {pred} ({conf:.2f})")
 
+    # ✅ Store alert for live tracking
+    LIVE_ALERTS.append({
+        "text": message,
+        "bert_label": pred,
+        "risk_score": int(conf * 100),
+        "timestamp": datetime.now().isoformat(),
+        "url": data.get("url", None),
+        "model": model_choice  # ✅ FIX: this was missing
+    })
+
     return jsonify({
         "label": pred,
         "confidence": round(conf, 2),
         "block": block_flag
     })
+
+# -------------------------- API to Get Live Messages --------------------------
+
+@app.route("/api/messages", methods=["GET"])
+def get_messages():
+    return jsonify(LIVE_ALERTS)
+
+# -------------------------- Feedback CSV Logger (Optional) --------------------------
 
 @app.route("/feedback", methods=["POST"])
 def feedback():
@@ -60,6 +114,8 @@ def feedback():
         df.to_csv(feedback_file, index=False)
 
     return jsonify({"status": "Feedback received ✅"})
+
+# -------------------------- Run Server --------------------------
 
 if __name__ == "__main__":
     app.run(port=8000)

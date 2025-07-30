@@ -29,7 +29,7 @@
 </head>
 <body>
   <nav class="navbar">
-    <span class="logo-text"><span class="logo-icon">🛡️</span>DIGI SHIELD</span>
+    <span class="logo-text"><span class="logo-icon">🛡️</span>MindTrack</span>
     <div class="nav-links">
       <a href="dashboard.html">Dashboard</a>
       <a href="alerts.html">Alerts</a>
@@ -78,83 +78,77 @@
     <p>DigiShield &copy; 2025. Protecting Children Online</p>
   </footer>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      fetch("http://127.0.0.1:5000/api/messages")
-        .then(res => res.json())
-        .then(data => {
-          const uniqueDayUrl = {};
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    fetch("http://127.0.0.1:8000/api/messages")
+      .then(res => res.json())
+      .then(data => {
+        const honeytrapCountsByDate = {};
 
-          data.forEach(entry => {
-            if (!entry.timestamp || !entry.url) return;
+        data.forEach(entry => {
+          if (entry.bert_label === "honeytrap" && entry.timestamp) {
             const date = new Date(entry.timestamp).toISOString().split("T")[0];
-            const key = `${date}_${entry.url}`;
-            uniqueDayUrl[key] = true;
-          });
+            honeytrapCountsByDate[date] = (honeytrapCountsByDate[date] || 0) + 1;
+          }
+        });
 
-          // Aggregate by date
-          const countByDate = {};
-          Object.keys(uniqueDayUrl).forEach(key => {
-            const date = key.split("_")[0];
-            countByDate[date] = (countByDate[date] || 0) + 1;
-          });
+        const sortedDates = Object.keys(honeytrapCountsByDate).sort();
+        const counts = sortedDates.map(date => honeytrapCountsByDate[date]);
 
-          const sortedDates = Object.keys(countByDate).sort();
-          const counts = sortedDates.map(date => countByDate[date]);
-
-          const ctx = document.getElementById("flaggedChart").getContext("2d");
-          new Chart(ctx, {
-            type: "line",
-            data: {
-              labels: sortedDates,
-              datasets: [{
-                label: "Toxic URLs Flagged per Day",
-                data: counts,
-                backgroundColor: "rgba(255, 99, 132, 0.2)",
-                borderColor: "rgba(255, 99, 132, 1)",
-                borderWidth: 2,
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointHoverRadius: 7
-              }]
+        const ctx = document.getElementById("flaggedChart").getContext("2d");
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: sortedDates,
+            datasets: [{
+              label: "Honeytrap Messages Detected Per Day",
+              data: counts,
+              backgroundColor: "rgba(255, 99, 132, 0.2)",
+              borderColor: "rgba(255, 99, 132, 1)",
+              borderWidth: 2,
+              fill: true,
+              tension: 0.3,
+              pointRadius: 5,
+              pointHoverRadius: 7
+            }]
+          },
+          options: {
+            responsive: true,
+            animation: {
+              duration: 1000,
+              easing: "easeOutQuart"
             },
-            options: {
-              responsive: true,
-              animation: {
-                duration: 1000,
-                easing: "easeOutQuart"
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: "Honeytrap Count" }
               },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: { display: true, text: "Count" }
-                },
-                x: {
-                  title: { display: true, text: "Date" }
+              x: {
+                title: { display: true, text: "Date" }
+              }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                labels: {
+                  color: "#333",
+                  font: { size: 14 }
                 }
               },
-              plugins: {
-                legend: {
-                  display: true,
-                  labels: {
-                    color: "#333",
-                    font: { size: 14 }
-                  }
-                },
-                tooltip: {
-                  callbacks: {
-                    label: ctx => ` ${ctx.raw} toxic page(s)`
-                  }
+              tooltip: {
+                callbacks: {
+                  label: ctx => ` ${ctx.raw} message(s) flagged`
                 }
               }
             }
-          });
-        })
-        .catch(err => {
-          console.error("Failed to load flagged chart:", err);
+          }
         });
-    });
-  </script>
+      })
+      .catch(err => {
+        console.error("Failed to load flagged chart:", err);
+      });
+  });
+</script>
+
 </body>
 </html>

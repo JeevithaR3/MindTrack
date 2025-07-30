@@ -13,30 +13,37 @@ chrome.storage.local.get("selectedModel", (data) => {
 });
 
 // 📝 Handle feedback submission
-document.getElementById("submitFeedback").addEventListener("click", function () {
-  const message = document.getElementById("feedbackText").value.trim();
+// popup.js
+document.getElementById("submitFeedback").addEventListener("click", () => {
+  const text = document.getElementById("feedbackText").value.trim();
   const label = document.getElementById("feedbackLabel").value;
+  const model = document.getElementById("model").value;
 
-  if (!message) {
-    alert("⚠️ Please enter a message.");
+  if (!text) {
+    alert("Please enter a message.");
     return;
   }
 
-  fetch("http://localhost:8000/feedback", {
+  const feedbackData = {
+    message: text,
+    label: label,
+    model: model,
+    timestamp: new Date().toISOString()
+  };
+
+  fetch("http://localhost:8000/submit_feedback", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, label })
+    body: JSON.stringify(feedbackData)
   })
-    .then(res => {
-      if (res.ok) {
-        alert("✅ Feedback submitted successfully!");
-        document.getElementById("feedbackText").value = "";
-      } else {
-        alert("❌ Failed to submit feedback.");
-      }
+    .then((res) => res.json())
+    .then((data) => {
+      alert("✅ Feedback submitted!");
+      document.getElementById("feedbackText").value = "";
     })
-    .catch(err => {
-      console.error("Feedback error:", err);
-      alert("❌ Could not connect to feedback server.");
+    .catch((err) => {
+      console.error("Submission failed:", err);
+      alert("❌ Failed to submit feedback.");
     });
 });
+
